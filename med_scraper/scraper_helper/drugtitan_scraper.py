@@ -2,9 +2,9 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import threading
 
-import web_scraping_resources as wb
-import abstract_med_scraper as md
-import med_db as db
+import med_scraper.scraper_helper.web_scraping_resources as wb
+import med_scraper.scraper_helper.abstract_med_scraper as md
+
 
 
 
@@ -18,12 +18,6 @@ class DrugEyeTitanScraper(md.Scraper):
     def scrape_data(self, drug_name):
         try:
             drv_flag=[True]
-            cache=db.MedDrugsDB().search_by_brand_name(drug_name,"drugeye_titan_cache")
-
-            #check if drug name found in cache
-            if cache is not None and not cache.empty:
-                drv_flag[0]=False
-                return cache.to_dict(orient='list')
 
             driver = wb.WebScarpingToolInit().initialize_driver("google")
             driver.get(self.url)
@@ -62,9 +56,9 @@ class DrugEyeTitanScraper(md.Scraper):
         elements = [x.find_all("td") for x in soup.find_all("tr")][1:]
 
         data = {
-            'Drug Name': [],
-            'Repeat': [],
-            'Price': []
+            'drug_name': [],
+            'repeat': [],
+            'price': []
         }
 
 
@@ -72,9 +66,9 @@ class DrugEyeTitanScraper(md.Scraper):
 
         for tr in elements:
             tds = [td.text for td in tr]
-            data['Drug Name'].append(tds[0])
-            data['Repeat'].append(tds[1])
-            data['Price'].append(tds[2])
+            data['drug_name'].append(tds[0])
+            data['repeat'].append(tds[1])
+            data['price'].append(tds[2])
 
         return data
 

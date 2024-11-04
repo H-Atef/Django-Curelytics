@@ -1,1 +1,6 @@
 *.exe
+*.json
+*.csv
+__pycache__/
+json_outputs/
+csv_outputs/

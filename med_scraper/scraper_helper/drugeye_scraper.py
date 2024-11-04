@@ -4,46 +4,58 @@ import threading
 import time
 import pandas as pd
 
-import web_scraping_resources as wb
-import abstract_med_scraper as md
-import med_db as db
+import med_scraper.scraper_helper.web_scraping_resources as wb
+import med_scraper.scraper_helper.abstract_med_scraper as md
+from med_scraper import models,serializers
+
 
 class DrugEyeScraper(md.Scraper):
     def __init__(self):
         self.url = "http://www.drugeye.pharorg.com/drugeyeapp/android-search/drugeye-android-live-go.aspx"
         self.scraper_name='drugeye'
-       
+    from rest_framework.exceptions import NotFound
+
+
     def scrape_data(self, drug_name):
-        try:
-            drv_flag=[True]
-            cache=db.MedDrugsDB().search_by_brand_name(drug_name)
+        # First, check if the drug exists in the database
+        medicine_info = models.MedicineInfo.objects.filter(drug_name__icontains=drug_name)
+        if medicine_info.exists():
+            serializer = serializers.MedicineSerializer(medicine_info,many=True)
+            return pd.DataFrame(serializer.data).to_dict(orient="list")  
 
-            #check if drug name found in cache
-            if cache is not None and not cache.empty:
-                #print("found")
-                drv_flag[0]=False
-                return cache.to_dict(orient="list")
-             
-            driver=wb.WebScarpingToolInit().initialize_driver("google")
-            driver.get(self.url)
-            time.sleep(1)
-            #print(driver.current_url,drug_name)
-            input_field = driver.find_element(By.NAME, "ttt")
-            input_field.send_keys(drug_name)
-            driver.find_element(By.ID, "b1").click()
-            table = driver.find_element(By.ID, "MyTable")
-            table.location_once_scrolled_into_view
-            table_html = table.get_attribute('outerHTML')
-            data = self._extract_data(table_html)
-            driver.close()
+        else:
+            # Drug not found in the database, proceed to scrape
+            try:
+                driver = wb.WebScarpingToolInit().initialize_driver("google")
+                driver.get(self.url)
 
-            return data
-        
-        except Exception as e:
-            if drv_flag:
+                input_field = driver.find_element(By.NAME, "ttt")
+                input_field.send_keys(drug_name)
+                driver.find_element(By.ID, "b1").click()
+
+                table = driver.find_element(By.ID, "MyTable")
+                table.location_once_scrolled_into_view
+                table_html = table.get_attribute('outerHTML')
+
+                # Extract data from the table
+                data = self._extract_data(table_html)
+
+                # Iterate over each row in the DataFrame and save it
+                for index, row in pd.DataFrame(data).iterrows():
+                    serializer = serializers.MedicineSerializer(data=row.to_dict())  # Convert row to dict
+                    if serializer.is_valid():
+                        serializer.save()
+                
+                return data
+
+            except Exception as e:
+                # Handle any scraping or saving exceptions
+                print(f"Error occurred: {e}")
+                return None
+
+            finally:
                 driver.close()
-            print(f"An error occurred while scraping data for {drug_name}: {e}")
-            return {}
+
 
     def scrape_multiple_data(self, drug_names):
         results = {}
@@ -116,23 +128,17 @@ class DrugEyeScraper(md.Scraper):
             similars.append(self.url + "?gname=" + q + "geno")
             alternatives.append(self.url + "?gname=" + q + "alto")
                     
-         
-
-
-        number_of_drugs=len(drug_names)
-        color_ref=["color:Blue", "color:Black", 
-                   "color:Green", "color:BlueViolet", "color:Navy"]*number_of_drugs
         
 
        
 
     
         data = {
-            'Drug Name': drug_names,
-            'Generic Name': generic_names,
-            'Drug Class': drug_classes,
-            'Similars':similars,
-            'Alternatives':alternatives
+            'drug_name': drug_names,
+            'generic_name': generic_names,
+            'drug_class': drug_classes,
+            'similars':similars,
+            'alternatives':alternatives
         }
 
         return data
