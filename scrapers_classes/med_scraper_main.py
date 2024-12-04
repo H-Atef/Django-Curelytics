@@ -1,9 +1,7 @@
-import med_scraper.scraper_helper.drugeye_scraper as de
-import med_scraper.scraper_helper.drugtitan_scraper as det
-import med_scraper.scraper_helper.data_handling as pro
+import scrapers_classes.drugeye_scraper as de
+import scrapers_classes.drugtitan_scraper as det
+import scrapers_classes.data_handling as pro
 import pandas as pd
-import datetime 
-import glob
 import os
 
 
@@ -11,6 +9,8 @@ SCRAPER_MAPPING = {
         'DrugEye': de.DrugEyeScraper(),
         'DrugEyeTitan': det.DrugEyeTitanScraper()
     }
+
+PATH="./scrapers_classes/"
 
 
 class ScraperContext:
@@ -30,21 +30,21 @@ class ScraperContext:
     
     def collect_and_process_data(self,data)->pd.DataFrame:
 
-        if not os.path.exists('./med_scraper/scraper_helper/json_outputs'):
-            os.makedirs('./med_scraper/scraper_helper/json_outputs')
+        if not os.path.exists(f'{PATH}json_outputs'):
+            os.makedirs(f'{PATH}json_outputs')
 
         pro.DataSerializer.serialize_data(data
-                                          ,f'./med_scraper/scraper_helper/json_outputs/tmp_{self.scraper.scraper_name}.json')
+                                          ,f'{PATH}json_outputs/tmp_{self.scraper.scraper_name}.json')
 
         
 
-        if not os.path.exists('./med_scraper/scraper_helper/csv_outputs'):
-            os.makedirs('./med_scraper/scraper_helper/csv_outputs')
+        if not os.path.exists(f'{PATH}csv_outputs'):
+            os.makedirs(f'{PATH}csv_outputs')
 
         df=pro.DataProcessor().process_multiple_data(data)
 
         if not df.empty:
-            df.to_csv(f'./med_scraper/scraper_helper/csv_outputs/tmp_{self.scraper.scraper_name}.csv'
+            df.to_csv(f'{PATH}csv_outputs/tmp_{self.scraper.scraper_name}.csv'
                                             ,index=False)
         
         return df

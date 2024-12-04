@@ -1,11 +1,10 @@
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import threading
-import time
 import pandas as pd
 
-import med_scraper.scraper_helper.web_scraping_resources as wb
-import med_scraper.scraper_helper.abstract_med_scraper as md
+import scrapers_classes.web_scraping_resources as wb
+import scrapers_classes.abstract_med_scraper as md
 from med_scraper import models,serializers
 
 

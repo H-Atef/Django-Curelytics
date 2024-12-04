@@ -20,4 +20,5 @@ from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('medicines/', include('med_scraper.urls')),
+    path('medicines/p/', include('med_price_tracker.urls')),
 ]
