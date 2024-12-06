@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import threading
 import pandas as pd
 from typing import Dict
+import queue
 
 import importlib
 
@@ -15,7 +16,10 @@ wb=importlib.import_module(module1)
 json_handler=importlib.import_module(module2)
 
 
-import queue
+from med_advisor import models,serializers
+
+
+
 
 class DrugEyeActvIngScraper():
     def __init__(self):
@@ -29,25 +33,21 @@ class DrugEyeActvIngScraper():
     
     def search_medicines(self, inputs_list, input_type='By Active Ingredient'):
         
-        def thread_function(input, results_dict):
+        def thread_function(input:str, results_list:list):
             try:
-                driver = wb.WebScarpingToolInit().initialize_driver("google")
-                driver.get(self.url)
-                data = self.scrape_page(driver=driver, input=input, input_type=input_type)
-                results_dict[input] = data  # Store the result for the specific input
+                data = self.scrape_page(input=input, input_type=input_type)
+                results_list.extend(data)  # Store the result for the specific input
             except Exception as e:
-                results_dict[input] = {}  # In case of error, store empty data
-            finally:
-                if driver:
-                    driver.close()  # Close the driver after each thread is done
+                print(e)
+                results_list.append({"actv_ing":"","drug_name":"","generic_name":"","drug_class":""}) # In case of error, store empty data
 
         threads = []
-        results_dict = {}
+        results_list= []
 
         try:
             # Create a thread for each input in the inputs_list
             for input in inputs_list:
-                thread = threading.Thread(target=thread_function, args=(input, results_dict))
+                thread = threading.Thread(target=thread_function, args=(input, results_list))
                 threads.append(thread)
                 thread.start()
 
@@ -56,50 +56,63 @@ class DrugEyeActvIngScraper():
                 thread.join()
 
 
-            reconstructed_data = []
-
-            # Iterate over all drugs in the data (e.g., ketoprofen, paracetamol, etc.)
-            for drug, details in results_dict.items():
-                # Convert the data into a DataFrame for each drug
-                df = pd.DataFrame(details)
-                
-                # Add the drug name as an extra column
-                df['drug_name'] = df['drug_name'].apply(lambda x: x.strip())
-                df['generic_name'] = df['generic_name'].apply(lambda x: x.strip())
-                df['drug_class'] = df['drug_class'].apply(lambda x: x.strip())
-                
-                # Combine active ingredients into a single string or list (if needed)
-                df['actv_ing'] = df['drug_name'].apply(lambda x:drug)
-
-                # Append the current drug's data to the reconstructed list
-                reconstructed_data.extend(df.to_dict(orient="records"))
-
-            return reconstructed_data
+            return results_list
 
         except Exception as e:
             # Handle any exceptions that might occur
             return {}
         
 
+    def scrape_page(self, input, input_type='By Active Ingredient'):
+        try:
+            # Check if the drug exists in the database
+            medicine_info = models.ActvIngredientsMedInfo.objects.filter(actv_ing__icontains=input)
+            if medicine_info.exists():
+                serializer = serializers.ActvIngMedSerializer(medicine_info, many=True)
+                return serializer.data
+            
+            # Initialize WebDriver and load the page
+            driver = wb.WebScarpingToolInit().initialize_driver("google")
+            driver.get(self.url)
+            
+            # Wait for input field and enter the search term
+            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "ttt"))).send_keys(input)
 
-    def scrape_page(self,driver,input,input_type='By Active Ingredient'):
-        
-        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.NAME, "ttt"))).send_keys(input)
+            # Click the relevant button based on input type
+            if input_type == 'By Active Ingredient':
+                WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "BG"))).click()
+            else:
+                WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "b1"))).click()
 
-        if input_type=='By Active Ingredient':
-            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "BG"))).click()
+            # Extract table data
+            table = driver.find_element(By.ID, "MyTable")
+            table_html = table.get_attribute('outerHTML')
+            data = self._extract_data(table_html)
 
-        else:
-            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "b1"))).click()
+            # Close driver
+            driver.close()
 
-        table = driver.find_element(By.ID, "MyTable")
-        table.location_once_scrolled_into_view
-        table_html = table.get_attribute('outerHTML')
-        
-        data = self._extract_data(table_html)
+            # Reconstruct and save data
+            result_dict = {input: data}
+            reconstructed_data = []
+            
+            for actv_ing, details in result_dict.items():
+                df = pd.DataFrame(details)
+                df['drug_name'] = df['drug_name'].str.strip()
+                df['generic_name'] = df['generic_name'].str.strip()
+                df['drug_class'] = df['drug_class'].str.strip()
+                df['actv_ing'] = actv_ing
+                reconstructed_data.extend(df.to_dict(orient="records"))
 
+            # Bulk save to database
+            instances = [models.ActvIngredientsMedInfo(**data) for data in reconstructed_data]
+            models.ActvIngredientsMedInfo.objects.bulk_create(instances)
 
-        return data
+            return reconstructed_data
+
+        except Exception as e:
+            #print(f"Error during scraping: {e}")
+            return []  # Return an empty list or handle as needed
 
 
 

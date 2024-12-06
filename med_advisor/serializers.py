@@ -13,5 +13,10 @@ class ActvIngDiseaseSerializer(serializers.ModelSerializer):
         model=models.ActvIngDisease
         exclude=["id"]
 
+class ActvIngMedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=models.ActvIngredientsMedInfo
+        exclude=["id"]
+
 
     
