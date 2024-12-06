@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('medicines/', include('med_scraper.urls')),
     path('medicines/p/', include('med_price_tracker.urls')),
+    path('medicines/a/', include('med_advisor.urls'))
 ]

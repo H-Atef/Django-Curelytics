@@ -6,3 +6,5 @@ json_outputs/
 csv_outputs/
 *.sqlite3
 *.db
+ai_model_auth.py
+json-outputs/

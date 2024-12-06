@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'med_scraper',
-    'med_price_tracker'
+    'med_price_tracker',
+    'med_advisor'
 ]
 
 MIDDLEWARE = [
