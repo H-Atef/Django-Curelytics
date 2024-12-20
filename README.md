@@ -1,0 +1,2 @@
+I want a description for a django project that includes three apps: 
+first app is a medicine web scraper: for scraping available medicine data and for the second app is about medicine prices data or called medicine price tracker: 
