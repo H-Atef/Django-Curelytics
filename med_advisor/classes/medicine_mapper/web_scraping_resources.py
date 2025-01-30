@@ -2,7 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 import requests
-
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 class WebScarpingToolInit:
     def initialize_driver(self,driver="firefox"):
@@ -35,7 +36,7 @@ class WebScarpingToolInit:
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument('log-level=3')
-            driver = webdriver.Chrome(options=chrome_options)
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
             return driver
     
     def initialize_requests_client(self,link=None)->requests.Response:

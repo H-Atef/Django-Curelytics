@@ -55,6 +55,8 @@ class GroqDiseasePredictor(importlib.import_module(module1).DiseasePredictor):
         Returns:
             A list of lists of tuples representing the top disease predictions for each case.
         """
+
+        cases_list=[f"Case {i+1}: {c}" for i,c in enumerate(symptoms_list)]
         
         max_attempts = 7  # Set the maximum number of retry attempts
         attempt = 0
@@ -69,16 +71,16 @@ class GroqDiseasePredictor(importlib.import_module(module1).DiseasePredictor):
                             "role": "user",
                             "content": f"""
                                 ``` 
-                                Return the following:
+                                Return the following for each case included in the list:
                                 ```  
                                 {{
                                     'case1' : [('diseases', probabilities)],
-                                    'case2' : [('diseases', probabilities)],
+                                    .......
                                 }}
                                 ```  
                                 Given the following input:
 
-                                ```{symptoms_list}```
+                                ```{cases_list}```
 
                                 Return the top 3 related diseases for each string/case 
                                 (each string could contain multiple symptoms the string fall between two ''), 

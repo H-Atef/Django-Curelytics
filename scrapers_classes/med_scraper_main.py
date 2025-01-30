@@ -42,6 +42,9 @@ class ScraperContext:
             os.makedirs(f'{PATH}csv_outputs')
 
         df=pro.DataProcessor().process_multiple_data(data)
+	
+        if df is None:
+            return pd.DataFrame({})
 
         if not df.empty:
             df.to_csv(f'{PATH}csv_outputs/tmp_{self.scraper.scraper_name}.csv'

@@ -23,6 +23,7 @@ class DrugEyeScraper(md.Scraper):
             return pd.DataFrame(serializer.data).to_dict(orient="list")  
 
         else:
+            driver=None
             # Drug not found in the database, proceed to scrape
             try:
                 driver = wb.WebScarpingToolInit().initialize_driver("google")
@@ -53,7 +54,8 @@ class DrugEyeScraper(md.Scraper):
                 return None
 
             finally:
-                driver.close()
+                if driver:
+                    driver.close()
 
 
     def scrape_multiple_data(self, drug_names):
