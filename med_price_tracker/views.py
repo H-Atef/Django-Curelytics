@@ -17,14 +17,10 @@ class MedicinePriceViewSet(ModelViewSet):
             return serializers.MedicineListSerializer  # Use the list serializer for POST
         return super().get_serializer_class()
 
-    @action(detail=False, methods=["GET", "POST"])
+    @action(detail=False, methods=["POST"])
     def scrape_medicine_price_info(self, request):
-        # Handle GET request - returns an empty list
-        if request.method == "GET":
-            return Response([], status=status.HTTP_200_OK)
-
         # Handle POST request - scrape the medicine prices based on provided medicines
-        elif request.method == "POST":
+        if request.method == "POST":
             # Validate the posted data with the MedicineListSerializer
             serializer = serializers.MedicineListSerializer(data=request.data)
             if serializer.is_valid():

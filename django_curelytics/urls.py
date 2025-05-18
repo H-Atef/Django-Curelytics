@@ -19,7 +19,7 @@ from django.urls import path,include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('medicines/', include('med_scraper.urls')),
-    path('medicines/p/', include('med_price_tracker.urls')),
-    path('medicines/a/', include('med_advisor.urls'))
+    path('api/v1/medicines/', include('med_scraper.urls')),
+    path('api/v1/price-tracker/', include('med_price_tracker.urls')),
+    path('api/v1/med-advisor/', include('med_advisor.urls'))
 ]
