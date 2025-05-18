@@ -8,3 +8,6 @@ csv_outputs/
 *.db
 ai_model_auth.py
 json-outputs/
+.env
+venv/
+migrations/

@@ -25,7 +25,7 @@ class DiseaseActvIngMapper:
         
         if serializer.data!=[]:
             df=pd.DataFrame(serializer.data)
-            df.columns=['Primary Active Ingredient','Alternative Treatment 1','Alternative Treatment 2','Diseases']
+            df.columns=['Option-1  Active Ingredient','Option-2  Active Ingredient','Option-3  Active Ingredient','Diseases']
         else:
             df=pd.read_csv(f"{path_actv}/datasets/active_ingredients_diseases.csv")
 
@@ -123,9 +123,9 @@ class DiseaseActvIngMapper:
                 row=row.to_dict(orient="list")
 
                 # Extract the treatments: Primary, Alternative 1, and Alternative 2
-                treatments = row['Primary Active Ingredient'] + \
-                            row['Alternative Treatment 1'] + \
-                            row['Alternative Treatment 2']
+                treatments = row['Option-1  Active Ingredient'] + \
+                             row['Option-2  Active Ingredient'] + \
+                             row['Option-3  Active Ingredient']
                 
                 # Remove duplicates by converting to a set, then back to a list
                 unique_treatments = list(set(treatments))
@@ -142,9 +142,9 @@ class DiseaseActvIngMapper:
 
             new_df = pd.DataFrame.from_dict(
                             {disease: {
-                                'Primary Active Ingredient': ingredients[0] if len(ingredients) > 0 else None,
-                                'Alternative Treatment 1': ingredients[1] if len(ingredients) > 1 else None,
-                                'Alternative Treatment 2': ingredients[2] if len(ingredients) > 2 else None,
+                                'Option-1  Active Ingredient': ingredients[0] if len(ingredients) > 0 else None,
+                                'Option-2  Active Ingredient': ingredients[1] if len(ingredients) > 1 else None,
+                                'Option-3  Active Ingredient': ingredients[2] if len(ingredients) > 2 else None,
                                 'Diseases': disease
                             } for disease, ingredients in data_dict.items()},
                             orient='index'
@@ -155,8 +155,8 @@ class DiseaseActvIngMapper:
             except FileNotFoundError:
                 # If file is not found, create an empty DataFrame with the specified columns
                 ai_df = pd.DataFrame(columns=[
-                    'Primary Active Ingredient','Alternative Treatment 1', 
-                    'Alternative Treatment 2', 'Diseases'])
+                    'Option-1  Active Ingredient','Option-2  Active Ingredient', 
+                    'Option-3  Active Ingredient', 'Diseases'])
 
             # Append the new data to the existing DataFrame
             self.df = pd.concat([self.df, new_df], ignore_index=True)
@@ -171,7 +171,7 @@ class DiseaseActvIngMapper:
             # Append the new data to DB
             instances = []
             new_df.drop('index',axis=1,inplace=True)
-            new_df.columns=["primary_treatment", "alt_treatment_one","alt_treatment_two","disease"]
+            new_df.columns=["option_one_treatment", "option_two_treatment","option_three_treatment","disease"]
            
             for index, row in new_df.iterrows():
                 actv = row.to_dict()

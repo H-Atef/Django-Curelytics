@@ -130,7 +130,7 @@ class ActvIngDiseaseToDB(APIView):
             # Process the dataset
             dataset_generator = ActiveIngredientsDatasetGenerator()
             df = dataset_generator.generate_csv_file()
-            df.columns = ["primary_treatment", "alt_treatment_one","alt_treatment_two","disease"]
+            df.columns = ["option_one_treatment", "option_two_treatment","option_three_treatment","disease"]
 
             # Check if the dataset already exists in the database
             existing_data = models.ActvIngDisease.objects.all()

@@ -4,9 +4,12 @@ from groq import Groq
 import importlib
 import time
 import logging
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 module1='med_advisor.classes.disease_predictors.base_disease_predictor'
-module2='med_advisor.classes.disease_predictors.ai_model_auth'
+
 
 
 class GroqDiseasePredictor(importlib.import_module(module1).DiseasePredictor):
@@ -23,7 +26,7 @@ class GroqDiseasePredictor(importlib.import_module(module1).DiseasePredictor):
             model_params: A dictionary of hyperparameters for the model (default is None).
         """
         super().__init__(df=None, model=model, model_params=model_params)  # df is not needed here as we're using Groq API
-        self.client = Groq(api_key=importlib.import_module(module2).API_KEY)
+        self.client = Groq(api_key=os.getenv("API_KEY"))
 
     def initialize_model(self) -> dict:
         """
@@ -93,6 +96,7 @@ class GroqDiseasePredictor(importlib.import_module(module1).DiseasePredictor):
                         }
                     ],
                     model="llama-3.1-70b-versatile",  # Assuming Groq uses Llama3 model
+                    temperature=0.2
                 )
 
                 # Parse the result from the API (assuming it's a string representation of a list of tuples)

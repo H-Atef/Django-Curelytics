@@ -11,9 +11,9 @@ class DiseaseSymptom(models.Model):
         verbose_name_plural = "Diseases"
         
 class ActvIngDisease(models.Model):
-    primary_treatment=models.CharField(max_length=250,default="-") 
-    alt_treatment_one=models.CharField(max_length=250,default="-") 
-    alt_treatment_two=models.CharField(max_length=250,default="-") 
+    option_one_treatment=models.CharField(max_length=250,default="-") 
+    option_two_treatment=models.CharField(max_length=250,default="-") 
+    option_three_treatment=models.CharField(max_length=250,default="-") 
     disease=models.CharField(max_length=250,default="-") 
     
 
