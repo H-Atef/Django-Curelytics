@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'med_scraper',
     'med_price_tracker',
-    'med_advisor'
+    'med_advisor',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

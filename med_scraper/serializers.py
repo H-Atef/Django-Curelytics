@@ -13,5 +13,7 @@ class MedicineListSerializer(serializers.Serializer):
         child=serializers.CharField(),
         allow_empty=False
     )
+    class Meta:
+        ref_name = "MedicineListSerializer_MedScraper"
 
     

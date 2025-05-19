@@ -4,8 +4,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router=DefaultRouter()
-router.register("medicine-info",views.MedicineViewSet,basename="medicine-info")
+router.register("",views.MedicineViewSet,basename="")
 
 urlpatterns = [
-    path("scrape/",views.MedicineViewSet.as_view({"get":"scrape_medicines","post":"scrape_medicines"}),name="scrape-medicines")
 ]+router.urls
